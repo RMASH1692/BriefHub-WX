@@ -339,10 +339,10 @@ if kirishima_pdf:
     os.remove(kirishima_pdf)
 
 # -----------------------------------
-# 6. 全画像を1つのPDFにまとめる処理
+# 6. 全画像を1つのPDFにまとめる処理 (A4高画質版)
 # -----------------------------------
 def create_combined_pdf(image_folder, output_pdf_name):
-    # PDFに含める画像リスト（HTMLの並び順と一致）
+    # PDFに含める画像リスト
     target_images = [
         "ASAS_Prior.png", "ASAS_Latest.png", "FSAS_Latest.png",
         "AUPQ35_Latest.png", "AUPQ78_Latest.png",
@@ -351,16 +351,41 @@ def create_combined_pdf(image_folder, output_pdf_name):
         "FXJP106_Latest.png", "FXJP854_Latest.png",
         "Sakurajima_Ashfall_Latest.png", "Kirishimayama_Ashfall_Latest.png"
     ]
+
+    # A4サイズ (300DPI) のピクセル数
+    # 幅: 8.27インチ × 300 = 2481 px
+    # 高さ: 11.69インチ × 300 = 3508 px
+    A4_SIZE = (2481, 3508)
+    
     pdf_pages = []
-    print("--- PDF結合処理開始 ---")
+    print("--- A4高画質PDF結合処理開始 ---")
+
     for img_name in target_images:
         img_path = os.path.join(image_folder, img_name)
+        
         if os.path.exists(img_path):
             try:
+                # 画像を読み込み
                 img = Image.open(img_path)
-                if img.mode != 'RGB': img = img.convert('RGB')
-                pdf_pages.append(img)
-                print(f"追加: {img_name}")
+                
+                # 1. 白色のA4ベースキャンバスを作成
+                canvas = Image.new('RGB', A4_SIZE, (255, 255, 255))
+                
+                # 2. アスペクト比を維持したまま、A4枠内に収まる最大サイズを計算
+                img.thumbnail(A4_SIZE, Image.Resampling.LANCZOS)
+                
+                # 3. 画像を中央に配置するための座標計算
+                offset = (
+                    (A4_SIZE[0] - img.width) // 2,
+                    (A4_SIZE[1] - img.height) // 2
+                )
+                
+                # 4. キャンバスに画像を貼り付け
+                canvas.paste(img, offset)
+                
+                pdf_pages.append(canvas)
+                print(f"追加 (A4最適化): {img_name}")
+                
             except Exception as e:
                 print(f"エラー（スキップ）: {img_name} -> {e}")
         else:
@@ -368,7 +393,17 @@ def create_combined_pdf(image_folder, output_pdf_name):
 
     if pdf_pages:
         output_path = os.path.join(image_folder, output_pdf_name)
-        pdf_pages[0].save(output_path, save_all=True, append_images=pdf_pages[1:])
-        print(f"PDF作成完了: {output_path}")
+        # 最初のページをベースに保存。resolution=300を指定して高画質設定を明示
+        pdf_pages[0].save(
+            output_path, 
+            save_all=True, 
+            append_images=pdf_pages[1:],
+            resolution=300.0,
+            quality=95
+        )
+        print(f"A4高画質PDF作成完了: {output_path}")
+    else:
+        print("結合する画像がありませんでした。")
 
+# 実行
 create_combined_pdf(dest_folder_path, "all_weather_charts.pdf")
