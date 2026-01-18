@@ -2,8 +2,11 @@ name: Update weather
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # 30分おき（UTC）
-  workflow_dispatch:        # 手動実行も可
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write   
 
 jobs:
   update:
