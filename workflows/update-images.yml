@@ -29,7 +29,7 @@ jobs:
 
       - name: Run update script
         run: |
-          python update_charts.py
+          python asas_update.py
 
       - name: Commit and push if changed
         run: |
