@@ -9,7 +9,7 @@
       margin: 0;
       padding: 0;
       background: #ffffff;
-      font-family: sans-serif; /* フォントを追加 */
+      font-family: sans-serif;
     }
 
     /* 中央カラム */
@@ -24,7 +24,19 @@
       width: 100%;
       height: auto;
       margin-bottom: 20px;
-      border: 1px solid #ddd; /* 薄い枠線があると見やすいです（任意） */
+      border: 1px solid #ddd;
+    }
+
+    /* --- 広告エリアのスタイル --- */
+    .ad-section {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 10px;
+      color: #999;
+    }
+    .ad-section-bottom {
+      margin-top: 30px;
+      margin-bottom: 50px;
     }
 
     /* --- ダウンロードボタンのスタイル --- */
@@ -32,9 +44,9 @@
       display: block;
       width: 100%;
       max-width: 300px;
-      margin: 0 auto 30px auto; /* 下に余白 */
+      margin: 0 auto 30px auto;
       padding: 15px;
-      background-color: #0078D4; /* 青色 */
+      background-color: #0078D4;
       color: white;
       text-align: center;
       text-decoration: none;
@@ -44,15 +56,21 @@
       transition: background-color 0.3s;
     }
     .download-btn:hover {
-      background-color: #005a9e; /* マウスホバー時の色 */
+      background-color: #005a9e;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
+  
+  <div class="ad-section">
+    <div>スポンサーリンク</div>
+    <script src="https://adm.shinobi.jp/s/d48b02e26328cc52fe718913f5eb116f"></script>
+    </div>
+
   <a href="images/all_weather_charts.pdf" class="download-btn" download="Weather_Charts_Summary.pdf">
-    Download PDF
+    Download PDF Summary
   </a>
 
   <img src="images/ASAS_Prior.png">
@@ -70,6 +88,12 @@
   <img src="images/QMCJ_RJFK_Latest.png">
   <img src="images/Sakurajima_Ashfall_Latest.png">
   <img src="images/Kirishimayama_Ashfall_Latest.png">
+
+  <div class="ad-section ad-section-bottom">
+    <div>スポンサーリンク</div>
+    <script src="https://adm.shinobi.jp/s/d48b02e26328cc52fe718913f5eb116f"></script>
+    </div>
+
 </div>
 
 </body>
