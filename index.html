@@ -4,32 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    html, body {
+    /* ページ全体 */
+    body {
       margin: 0;
       padding: 0;
+      background: #ffffff;
     }
+
+    /* 中央カラム */
+    .container {
+      max-width: 900px;     /* ← ここが左右余白の正体 */
+      margin: 0 auto;       /* 中央寄せ */
+      padding: 20px 10px;   /* 余白 */
+    }
+
     img {
       display: block;
-      max-width: 100%;
+      width: 100%;
       height: auto;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
 
-<img src="images/ASAS_Prior.png">
-<img src="images/ASAS_Latest.png">
-<img src="images/FSAS_Latest.png">
-<img src="images/AUPQ35_Latest.png">
-<img src="images/AUPQ78_Latest.png">
-<img src="images/FXFE502_Latest.png">
-<img src="images/FXFE5782_Latest.png">
-<img src="images/FBJP_Latest.png">
-<img src="images/FBOS39_Latest.png">
-<img src="images/FXJP106_Latest.png">
-<img src="images/FXJP854_Latest.png">
-<img src="images/Sakurajima_Ashfall_Latest.png">
-<img src="images/Kirishimayama_Ashfall_Latest.png">
+<div class="container">
+  <img src="images/ASAS_Prior.png">
+  <img src="images/ASAS_Latest.png">
+  <img src="images/FSAS_Latest.png">
+  <img src="images/AUPQ35_Latest.png">
+  <img src="images/AUPQ78_Latest.png">
+  <img src="images/FXFE502_Latest.png">
+  <img src="images/FXFE5782_Latest.png">
+  <img src="images/FBJP_Latest.png">
+  <img src="images/FBOS39_Latest.png">
+  <img src="images/FXJP106_Latest.png">
+  <img src="images/FXJP854_Latest.png">
+  <img src="images/Sakurajima_Ashfall_Latest.png">
+  <img src="images/Kirishimayama_Ashfall_Latest.png">
+</div>
 
 </body>
 </html>
