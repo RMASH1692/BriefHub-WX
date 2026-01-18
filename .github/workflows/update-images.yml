@@ -1,0 +1,41 @@
+name: Update weather charts
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # 30分おき（UTC）
+  workflow_dispatch:        # 手動実行も可
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+
+      - name: Install Python dependencies
+        run: |
+          pip install requests pdf2image pillow
+
+      - name: Run update script
+        run: |
+          python update_charts.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add images
+          git diff --cached --quiet || git commit -m "Update weather charts"
+          git push
