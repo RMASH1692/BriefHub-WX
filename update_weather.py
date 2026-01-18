@@ -247,6 +247,51 @@ def get_latest_jma_ashfall_pdf(chart_id, chart_name):
     print(f"直近2日以内の {chart_name} (チャートID: {chart_id}) PDFが見つかりませんでした")
     return None
 
+# -----------------------------------
+# 3.4. 降灰予想図（UTC基準・バックアップ付き・安定版）3.3更新不具合に伴い追加
+# -----------------------------------
+def get_latest_jma_ashfall_pdf_stable(volcano_name, volcano_code):
+    ash_hours = [2, 5, 8, 11, 14, 17, 20, 23]
+    now_utc = datetime.now(timezone.utc)
+
+    candidates = [h for h in ash_hours if h <= now_utc.hour]
+    if candidates:
+        base_hour = max(candidates)
+        base_day = now_utc
+    else:
+        base_hour = ash_hours[-1]
+        base_day = now_utc - timedelta(days=1)
+
+    idx = ash_hours.index(base_hour)
+    candidate_hours = [ash_hours[(idx - i) % len(ash_hours)] for i in range(len(ash_hours))]
+
+    for i in range(2):  # 当日＋前日
+        day = base_day - timedelta(days=i)
+
+        for hh in candidate_hours:
+            ash_time = day.replace(hour=hh, minute=0, second=0, microsecond=0)
+            ts = ash_time.strftime("%Y%m%d%H%M%S")
+
+            url = (
+                "https://www.jma.go.jp/bosai/volcano/data/ashfall/pdf/"
+                f"Z__C_RJTD_{ts}_EQV_CHT_JCIashfallr_{volcano_code}_N1_image.pdf"
+            )
+
+            filename = f"ASHFALL_{volcano_name}_{ts}.pdf"
+            r = requests.get(url)
+
+            if r.status_code == 200 and len(r.content) > 10240:
+                with open(filename, "wb") as f:
+                    f.write(r.content)
+                print(f"取得成功（降灰予想）: {filename}")
+                return filename
+            else:
+                print(f"未発行: {volcano_name} {ts}")
+
+    print(f"取得失敗（全候補）: {volcano_name}")
+    return None
+
+
 
 # -----------------------------------
 # 4. PDFをPNGに変換してDriveに保存
@@ -388,18 +433,14 @@ if fpos39_png_local:
 
 
 # --- 桜島・霧島山 降灰予報図の処理 ---
-# 桜島
-sakurajima_pdf_local = get_latest_jma_ashfall_pdf('JR506X', '桜島')
+# --- 桜島 降灰予想図 ---
+sakurajima_pdf_local = get_latest_jma_ashfall_pdf_stable("Sakurajima", "JR506X")
 if sakurajima_pdf_local:
     pdf_to_png_and_upload(sakurajima_pdf_local, "Sakurajima_Ashfall_Latest.png")
-    if os.path.exists(sakurajima_pdf_local):
-        os.remove(sakurajima_pdf_local)
-        print(f"ローカルのPDFファイル {sakurajima_pdf_local} を削除しました。")
+    os.remove(sakurajima_pdf_local)
 
-# 霧島山
-kirishimayama_pdf_local = get_latest_jma_ashfall_pdf('JR551X', '霧島山')
-if kirishimayama_pdf_local:
-    pdf_to_png_and_upload(kirishimayama_pdf_local, "Kirishimayama_Ashfall_Latest.png")
-    if os.path.exists(kirishimayama_pdf_local):
-        os.remove(kirishimayama_pdf_local)
-        print(f"ローカルのPDFファイル {kirishimayama_pdf_local} を削除しました。")
+# --- 霧島山（新燃岳）降灰予想図 ---
+kirishima_pdf_local = get_latest_jma_ashfall_pdf_stable("Kirishimayama", "JR551X")
+if kirishima_pdf_local:
+    pdf_to_png_and_upload(kirishima_pdf_local, "Kirishimayama_Ashfall_Latest.png")
+    os.remove(kirishima_pdf_local)
