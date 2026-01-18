@@ -339,7 +339,7 @@ if kirishima_pdf:
     os.remove(kirishima_pdf)
 
 # -----------------------------------
-# 6. 全画像を1つのPDFにまとめる処理 (向き自動判別・A4フルサイズ版)
+# 6. 全画像を1つのPDFにまとめる処理 (A4最大化・固定ファイル名版)
 # -----------------------------------
 def create_combined_pdf(image_folder, output_pdf_name):
     target_images = [
@@ -351,45 +351,43 @@ def create_combined_pdf(image_folder, output_pdf_name):
         "Sakurajima_Ashfall_Latest.png", "Kirishimayama_Ashfall_Latest.png"
     ]
 
-    # A4 (300DPI) の定義
-    W_PX = 2481  # A4短辺
-    H_PX = 3508  # A4長辺
+    # A4 (300DPI) サイズ定義
+    A4_PORTRAIT_PX = (2480, 3508)
+    A4_LANDSCAPE_PX = (3508, 2480)
     
     pdf_pages = []
-    print("--- A4最適化PDF結合処理開始 ---")
+    # ログ用に日付を取得
+    now_jst = datetime.now(timezone.utc) + timedelta(hours=9)
+    print(f"--- A4最大化PDF結合開始 (生成日: {now_jst.strftime('%Y/%m/%d')}) ---")
 
     for img_name in target_images:
         img_path = os.path.join(image_folder, img_name)
         
         if os.path.exists(img_path):
             try:
-                img = Image.open(img_path)
-                img_w, img_h = img.size
+                img = Image.open(img_path).convert("RGB")
+                w, h = img.size
                 
-                # 1. 画像の向きに合わせてA4キャンバスの向きを決定
-                if img_w > img_h:
-                    # 横長の場合
-                    page_size = (H_PX, W_PX)
-                    print(f"向き判定: 横長 -> {img_name}")
+                # 1. 向きの判定
+                page_size = A4_LANDSCAPE_PX if w >= h else A4_PORTRAIT_PX
+
+                # 2. 比率計算による最大リサイズ
+                img_ratio = w / h
+                page_ratio = page_size[0] / page_size[1]
+
+                if img_ratio > page_ratio:
+                    new_w = page_size[0]
+                    new_h = int(new_w / img_ratio)
                 else:
-                    # 縦長（または正方形）の場合
-                    page_size = (W_PX, H_PX)
-                    print(f"向き判定: 縦長 -> {img_name}")
+                    new_h = page_size[1]
+                    new_w = int(new_h * img_ratio)
+
+                # 3. リサイズと中央配置
+                resized_img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                canvas = Image.new("RGB", page_size, (255, 255, 255))
+                offset = ((page_size[0] - new_w) // 2, (page_size[1] - new_h) // 2)
+                canvas.paste(resized_img, offset)
                 
-                # 2. 白色背景のキャンバス作成
-                canvas = Image.new('RGB', page_size, (255, 255, 255))
-                
-                # 3. アスペクト比を維持して、A4枠いっぱいにリサイズ
-                # thumbnail() はアスペクト比を維持したまま、指定サイズに収まる最大サイズにする
-                img.thumbnail(page_size, Image.Resampling.LANCZOS)
-                
-                # 4. 中央に配置
-                offset = (
-                    (page_size[0] - img.width) // 2,
-                    (page_size[1] - img.height) // 2
-                )
-                
-                canvas.paste(img, offset)
                 pdf_pages.append(canvas)
                 
             except Exception as e:
@@ -398,9 +396,8 @@ def create_combined_pdf(image_folder, output_pdf_name):
             print(f"未存在（スキップ）: {img_name}")
 
     if pdf_pages:
-        output_path = os.path.join(image_folder, output_pdf_name)
-        # 各ページのサイズが異なる可能性があるため、最初のページを保存する際に
-        # 全てのページ情報を含めて保存
+        # ファイル名を以前と同じ 'all_weather_charts.pdf' に固定
+        output_path = os.path.join(image_folder, "all_weather_charts.pdf")
         pdf_pages[0].save(
             output_path, 
             save_all=True, 
@@ -408,9 +405,10 @@ def create_combined_pdf(image_folder, output_pdf_name):
             resolution=300.0,
             quality=95
         )
-        print(f"A4最適化PDF作成完了: {output_path}")
+        print(f"A4最大化PDF作成完了: {output_path}")
     else:
-        print("結合する画像がありませんでした。")
+        print("作成対象の画像が見つかりませんでした。")
 
 # 実行
+create_combined_pdf(dest_folder_path, "all_weather_charts.pdf")
 create_combined_pdf(dest_folder_path, "all_weather_charts.pdf")
