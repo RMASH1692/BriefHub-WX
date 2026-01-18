@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install requests pdf2image pillow
+          pip install requests pdf2image pillow pypdf reportlab
 
       - name: Run update script
         run: |
