@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 UTC = timezone.utc # Add timezone import
 from pdf2image import convert_from_path
 import shutil
-import os # osモジュールを追加
+import os
+from PIL import Image
 
 # -----------------------------------
 # 1. 保存先フォルダの定義
@@ -444,3 +445,62 @@ kirishima_pdf_local = get_latest_jma_ashfall_pdf_stable("Kirishimayama", "JR551X
 if kirishima_pdf_local:
     pdf_to_png_and_upload(kirishima_pdf_local, "Kirishimayama_Ashfall_Latest.png")
     os.remove(kirishima_pdf_local)
+
+# -----------------------------------
+# 6. 全画像を1つのPDFにまとめる処理 (追加機能)
+# -----------------------------------
+def create_combined_pdf(image_folder, output_pdf_name):
+    # PDFに含めたい画像のファイル名リスト（HTMLの並び順と同じにする）
+    target_images = [
+        "ASAS_Prior.png",
+        "ASAS_Latest.png",
+        "FSAS_Latest.png",
+        "AUPQ35_Latest.png",
+        "AUPQ78_Latest.png",
+        "FXFE502_Latest.png",
+        "FXFE5782_Latest.png",
+        "FBJP_Latest.png",
+        "FBOS39_Latest.png",
+        "FXJP106_Latest.png",
+        "FXJP854_Latest.png",
+        "Sakurajima_Ashfall_Latest.png",
+        "Kirishimayama_Ashfall_Latest.png"
+    ]
+
+    pdf_pages = []
+
+    print("--- PDF結合処理開始 ---")
+    
+    for img_name in target_images:
+        img_path = os.path.join(image_folder, img_name)
+        
+        if os.path.exists(img_path):
+            try:
+                # 画像を開く
+                img = Image.open(img_path)
+                
+                # PDFにするためにRGBモードに変換（PNGはRGBAの場合があるため必須）
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                
+                pdf_pages.append(img)
+                print(f"追加: {img_name}")
+            except Exception as e:
+                print(f"エラー（スキップ）: {img_name} -> {e}")
+        else:
+            print(f"未存在（スキップ）: {img_name}")
+
+    if pdf_pages:
+        output_path = os.path.join(image_folder, output_pdf_name)
+        # 最初の画像をベースに、残りの画像をappendして保存
+        pdf_pages[0].save(
+            output_path, 
+            save_all=True, 
+            append_images=pdf_pages[1:]
+        )
+        print(f"PDF作成完了: {output_path}")
+    else:
+        print("結合する画像がありませんでした。")
+
+# 実行
+create_combined_pdf(dest_folder_path, "all_weather_charts.pdf")
