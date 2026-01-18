@@ -1,4 +1,4 @@
-name: Update weather charts
+name: Update weather
 
 on:
   schedule:
