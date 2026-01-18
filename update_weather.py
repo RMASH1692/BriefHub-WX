@@ -327,6 +327,13 @@ if fbjp_png: direct_png_upload(fbjp_png, "FBJP_Latest.png")
 fpos39_png = download_jma_png("https://www.data.jma.go.jp/airinfo/data/pict/low-level_sigwx/fbos39.png", "FBOS39_Latest")
 if fpos39_png: direct_png_upload(fpos39_png, "FBOS39_Latest.png")
 
+# --- QMCD / QMCJ 追加分 ---
+qmcd_png = download_jma_png("https://www.data.jma.go.jp/airinfo/data/pict/taf/QMCD98_RJFK.png", "QMCD_RJFK_Latest")
+if qmcd_png: direct_png_upload(qmcd_png, "QMCD_RJFK_Latest.png")
+
+qmcj_png = download_jma_png("https://www.data.jma.go.jp/airinfo/data/pict/taf/QMCJ98_RJFK.png", "QMCJ_RJFK_Latest")
+if qmcj_png: direct_png_upload(qmcj_png, "QMCJ_RJFK_Latest.png")
+
 # --- 降灰予報図 (合成不要) ---
 sakurajima_pdf = get_latest_jma_ashfall_pdf_stable("Sakurajima", "JR506X")
 if sakurajima_pdf:
@@ -348,6 +355,8 @@ def create_combined_pdf(image_folder, output_pdf_name):
         "FXFE502_Latest.png", "FXFE5782_Latest.png",
         "FBJP_Latest.png", "FBOS39_Latest.png",
         "FXJP106_Latest.png", "FXJP854_Latest.png",
+        "QMCD_RJFK_Latest.png",
+        "QMCJ_RJFK_Latest.png",
         "Sakurajima_Ashfall_Latest.png", "Kirishimayama_Ashfall_Latest.png"
     ]
 
