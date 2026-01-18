@@ -339,7 +339,7 @@ if kirishima_pdf:
     os.remove(kirishima_pdf)
 
 # -----------------------------------
-# 6. 全画像を1つのPDFにまとめる処理 (A4最大化・固定ファイル名版)
+# 6. 全画像を1つのPDFにまとめる処理 (印刷品質重視・限界挑戦版)
 # -----------------------------------
 def create_combined_pdf(image_folder, output_pdf_name):
     target_images = [
@@ -351,27 +351,21 @@ def create_combined_pdf(image_folder, output_pdf_name):
         "Sakurajima_Ashfall_Latest.png", "Kirishimayama_Ashfall_Latest.png"
     ]
 
-    # A4 (300DPI) サイズ定義
+    # A4 300DPI (印刷品質基準)
     A4_PORTRAIT_PX = (2480, 3508)
     A4_LANDSCAPE_PX = (3508, 2480)
     
     pdf_pages = []
-    # ログ用に日付を取得
-    now_jst = datetime.now(timezone.utc) + timedelta(hours=9)
-    print(f"--- A4最大化PDF結合開始 (生成日: {now_jst.strftime('%Y/%m/%d')}) ---")
+    print("--- A4高画質PDF結合開始 (300DPI・高品質設定) ---")
 
     for img_name in target_images:
         img_path = os.path.join(image_folder, img_name)
-        
         if os.path.exists(img_path):
             try:
                 img = Image.open(img_path).convert("RGB")
                 w, h = img.size
-                
-                # 1. 向きの判定
                 page_size = A4_LANDSCAPE_PX if w >= h else A4_PORTRAIT_PX
 
-                # 2. 比率計算による最大リサイズ
                 img_ratio = w / h
                 page_ratio = page_size[0] / page_size[1]
 
@@ -382,33 +376,35 @@ def create_combined_pdf(image_folder, output_pdf_name):
                     new_h = page_size[1]
                     new_w = int(new_h * img_ratio)
 
-                # 3. リサイズと中央配置
                 resized_img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
                 canvas = Image.new("RGB", page_size, (255, 255, 255))
                 offset = ((page_size[0] - new_w) // 2, (page_size[1] - new_h) // 2)
                 canvas.paste(resized_img, offset)
                 
                 pdf_pages.append(canvas)
-                
             except Exception as e:
-                print(f"エラー（スキップ）: {img_name} -> {e}")
-        else:
-            print(f"未存在（スキップ）: {img_name}")
+                print(f"エラー: {img_name} -> {e}")
 
     if pdf_pages:
-        # ファイル名を以前と同じ 'all_weather_charts.pdf' に固定
         output_path = os.path.join(image_folder, "all_weather_charts.pdf")
+        # 保存設定をギリギリまで調整
         pdf_pages[0].save(
             output_path, 
             save_all=True, 
             append_images=pdf_pages[1:],
             resolution=300.0,
-            quality=95
+            quality=85,           # 85はサイズ効率が非常に高いです
+            subsampling=0,        # 色のにじみを防止
+            optimize=True         # 圧縮の最適化を有効化
         )
-        print(f"A4最大化PDF作成完了: {output_path}")
+        file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
+        print(f"PDF作成完了: {output_path} (サイズ: {file_size_mb:.2f} MB)")
+        
+        # もしこれでも25MBを超えた場合の警告
+        if file_size_mb > 25:
+            print("【警告】ファイルサイズが25MBを超えています。Cloudflare Pagesでの公開に失敗する可能性があります。")
     else:
         print("作成対象の画像が見つかりませんでした。")
 
 # 実行
-create_combined_pdf(dest_folder_path, "all_weather_charts.pdf")
 create_combined_pdf(dest_folder_path, "all_weather_charts.pdf")
