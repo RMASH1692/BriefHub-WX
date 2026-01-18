@@ -9,13 +9,14 @@
       margin: 0;
       padding: 0;
       background: #ffffff;
+      font-family: sans-serif; /* フォントを追加 */
     }
 
     /* 中央カラム */
     .container {
-      max-width: 900px;     /* ← ここが左右余白の正体 */
-      margin: 0 auto;       /* 中央寄せ */
-      padding: 20px 10px;   /* 余白 */
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 10px;
     }
 
     img {
@@ -23,12 +24,37 @@
       width: 100%;
       height: auto;
       margin-bottom: 20px;
+      border: 1px solid #ddd; /* 薄い枠線があると見やすいです（任意） */
+    }
+
+    /* --- ダウンロードボタンのスタイル --- */
+    .download-btn {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto 30px auto; /* 下に余白 */
+      padding: 15px;
+      background-color: #0078D4; /* 青色 */
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+    }
+    .download-btn:hover {
+      background-color: #005a9e; /* マウスホバー時の色 */
     }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <a href="images/all_weather_charts.pdf" class="download-btn" download="Weather_Charts_Summary.pdf">
+    📥 全チャートをPDFでダウンロード
+  </a>
+
   <img src="images/ASAS_Prior.png">
   <img src="images/ASAS_Latest.png">
   <img src="images/FSAS_Latest.png">
