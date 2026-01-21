@@ -317,9 +317,77 @@ if fxjp854_pdf:
     if os.path.exists(fxjp854_pdf): os.remove(fxjp854_pdf)
     if fxjp854_color != fxjp854_pdf and os.path.exists(fxjp854_color): os.remove(fxjp854_color)
 
-# --- その他のPNGチャート (合成不要) ---
-fxjp106_png = get_latest_jma_hourly_png('fxjp106', [0, 3, 6, 9, 12, 15, 18, 21])
-if fxjp106_png: direct_png_upload(fxjp106_png, "FXJP106_Latest.png")
+# ---------------------------------------------------------
+# FXJP106 (修正版: 更新日時確認ロジック)
+# URL: https://www.data.jma.go.jp/airinfo/data/pict/nwp/fxjp106_HH.png
+# ---------------------------------------------------------
+from email.utils import parsedate_to_datetime # HTTPヘッダーの日付解析用
+
+def download_fxjp106_checked():
+    now_utc = datetime.now(timezone.utc)
+    
+    # 現在の時刻を基準に、直近の3時間ごとの時刻(00, 03...21)を計算
+    # 例: 10時なら09時、02時なら00時
+    base_hour = (now_utc.hour // 3) * 3
+    
+    # 最新候補から順に「過去へ」遡ってチェックする
+    # 最大4回（12時間前まで）遡れば、必ず有効な最新図が見つかるはず
+    for i in range(4):
+        # 時間計算 (24時間表記の調整)
+        target_h = (base_hour - (i * 3)) % 24
+        h_str = f"{target_h:02d}"
+        
+        url = f"https://www.data.jma.go.jp/airinfo/data/pict/nwp/fxjp106_{h_str}.png"
+        filename = f"FXJP106_temp_{h_str}.png"
+        
+        try:
+            # HEADリクエストでヘッダー情報のみ取得（ファイル本体はまだ落とさない）
+            head_req = requests.head(url, timeout=10)
+            
+            if head_req.status_code == 200:
+                # Last-Modifiedヘッダー（更新日時）を取得
+                last_modified_str = head_req.headers.get('Last-Modified')
+                
+                if last_modified_str:
+                    # 文字列をdatetimeオブジェクトに変換
+                    last_modified_dt = parsedate_to_datetime(last_modified_str)
+                    
+                    # サーバーの日時と現在時刻の差を計算
+                    time_diff = now_utc - last_modified_dt
+                    
+                    # 【重要】判定ロジック
+                    # もしファイルの更新時間が「12時間以上前」なら、それは「昨日のデータ」とみなしてスキップ
+                    # (FXJP106は3時間ごとなので、正常なら数時間以内の古さのはず)
+                    if time_diff > timedelta(hours=12):
+                        print(f"スキップ: {url} はデータが古すぎます (更新: {last_modified_dt}, 経過: {time_diff})")
+                        continue
+                    
+                    # データが新しい場合のみダウンロード実行
+                    r = requests.get(url, timeout=20)
+                    if r.status_code == 200:
+                        with open(filename, "wb") as f:
+                            f.write(r.content)
+                        print(f"FXJP106 をダウンロードしました (対象時刻: {h_str}UTC, 更新: {last_modified_dt})")
+                        return filename
+                else:
+                    # Last-Modifiedがない場合は、危険なのでスキップするか、とりあえず落とす（今回はスキップ）
+                    print(f"警告: Last-Modifiedヘッダーがありません ({url})")
+                    continue
+            else:
+                # 404などの場合
+                continue
+                
+        except Exception as e:
+            print(f"FXJP106 チェックエラー ({h_str}UTC): {e}")
+            continue
+
+    print("FXJP106: 有効な（新しい）画像が見つかりませんでした")
+    return None
+
+# 実行とアップロード
+fxjp106_png = download_fxjp106_checked()
+if fxjp106_png:
+    direct_png_upload(fxjp106_png, "FXJP106_Latest.png")
 
 fbjp_png = download_jma_png("https://www.data.jma.go.jp/airinfo/data/pict/fbjp/fbjp.png", "FBJP_Latest")
 if fbjp_png: direct_png_upload(fbjp_png, "FBJP_Latest.png")
