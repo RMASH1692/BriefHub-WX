@@ -19,35 +19,12 @@
       padding: 20px 10px;
     }
 
-    /* 画像のスタイル */
-    .chart-img {
+    img {
       display: block;
       width: 100%;
       height: auto;
-      margin-bottom: 20px; /* 下の余白 */
+      margin-bottom: 20px;
       border: 1px solid #ddd;
-    }
-
-    /* --- 個別更新時間の表示スタイル --- */
-    .chart-timestamp {
-      font-size: 12px;
-      color: #555;
-      background-color: #f9f9f9;
-      padding: 4px 8px;
-      border-radius: 4px 4px 0 0; /* 上の角だけ丸く */
-      border: 1px solid #ddd;
-      border-bottom: none; /* 画像と接する部分は線を消す */
-      display: inline-block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    
-    /* タイムスタンプと画像をまとめるラッパー（スクリプトで自動生成） */
-    .chart-wrapper {
-      margin-bottom: 30px;
-    }
-    .chart-wrapper img {
-      margin-bottom: 0; /* ラッパー内では画像の下マージンを消す */
     }
 
     /* --- 広告エリアのスタイル --- */
@@ -90,84 +67,34 @@
   <div class="ad-section">
     <div>スポンサーリンク</div>
     <script src="https://adm.shinobi.jp/s/d48b02e26328cc52fe718913f5eb116f"></script>
-  </div>
+    </div>
 
   <a href="images/all_weather_charts.pdf" class="download-btn" download="Weather_Charts_Summary.pdf">
     Download PDF
   </a>
 
-  <img src="images/ASAS_Latest.png" class="chart-img">
-  <img src="images/ASAS_Prior.png" class="chart-img">
-  <img src="images/FSAS_Latest.png" class="chart-img">
-  <img src="images/AUPQ35_Latest.png" class="chart-img">
-  <img src="images/AUPQ78_Latest.png" class="chart-img">
-  <img src="images/FXFE502_Latest.png" class="chart-img">
-  <img src="images/FXFE5782_Latest.png" class="chart-img">
-  <img src="images/FBJP_Latest.png" class="chart-img">
-  <img src="images/FBOS39_Latest.png" class="chart-img">
-  <img src="images/FXJP106_Latest.png" class="chart-img">
-  <img src="images/FXJP854_Latest.png" class="chart-img">
-  <img src="images/QMCD_RJFK_Latest.png" class="chart-img">
-  <img src="images/QMCJ_RJFK_Latest.png" class="chart-img">
-  <img src="images/Sakurajima_Ashfall_Latest.png" class="chart-img">
-  <img src="images/Kirishimayama_Ashfall_Latest.png" class="chart-img">
+  <img src="images/ASAS_Prior.png">
+  <img src="images/ASAS_Latest.png">
+  <img src="images/FSAS_Latest.png">
+  <img src="images/AUPQ35_Latest.png">
+  <img src="images/AUPQ78_Latest.png">
+  <img src="images/FXFE502_Latest.png">
+  <img src="images/FXFE5782_Latest.png">
+  <img src="images/FBJP_Latest.png">
+  <img src="images/FBOS39_Latest.png">
+  <img src="images/FXJP106_Latest.png">
+  <img src="images/FXJP854_Latest.png">
+  <img src="images/QMCD_RJFK_Latest.png">
+  <img src="images/QMCJ_RJFK_Latest.png">
+  <img src="images/Sakurajima_Ashfall_Latest.png">
+  <img src="images/Kirishimayama_Ashfall_Latest.png">
 
   <div class="ad-section ad-section-bottom">
     <div>スポンサーリンク</div>
     <script src="https://adm.shinobi.jp/s/d48b02e26328cc52fe718913f5eb116f"></script>
-  </div>
+    </div>
 
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  // 'chart-img' クラスがついている全ての画像を取得
-  const images = document.querySelectorAll('.chart-img');
-
-  images.forEach(img => {
-    const src = img.getAttribute('src');
-    if (!src) return;
-
-    // 1. 表示用の要素を作成
-    const wrapper = document.createElement('div');
-    wrapper.className = 'chart-wrapper';
-    
-    const timeLabel = document.createElement('div');
-    timeLabel.className = 'chart-timestamp';
-    timeLabel.innerText = '更新日時を確認中...';
-
-    // 2. HTMLの構造を書き換え (imgをwrapperの中に入れ、上にlabelを置く)
-    img.parentNode.insertBefore(wrapper, img);
-    wrapper.appendChild(timeLabel);
-    wrapper.appendChild(img);
-
-    // 3. 個別に更新時間を取得しに行く
-    fetch(src, { method: 'HEAD', cache: 'no-store' })
-      .then(response => {
-        if (response.ok) {
-          const lastModified = response.headers.get('Last-Modified');
-          if (lastModified) {
-            const date = new Date(lastModified);
-            // 日本時間形式に変換
-            const dateString = date.toLocaleString('ja-JP', {
-              month: '2-digit', day: '2-digit',
-              hour: '2-digit', minute: '2-digit'
-            });
-            timeLabel.innerText = `Data Updated: ${dateString}`;
-            
-            // オプション: 新しいデータかどうかで色を変えるなどの処理も可能
-          } else {
-            timeLabel.innerText = '更新日時不明';
-          }
-        } else {
-          timeLabel.innerText = '取得エラー';
-        }
-      })
-      .catch(() => {
-        timeLabel.innerText = '通信エラー';
-      });
-  });
-});
-</script>
 </body>
 </html>
